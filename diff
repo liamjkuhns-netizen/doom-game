@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mini DOOM</title>
+<style>
+body {
+  margin: 0;
+  background: black;
+  color: red;
+  font-family: monospace;
+  text-align: center;
+}
+canvas {
+  background: #111;
+  display: block;
+  margin: auto;
+  border: 3px solid red;
+}
+</style>
+</head>
+<body>
+
+<h1>MINI DOOM</h1>
+<p>WASD = Move | SPACE = Shoot</p>
+<canvas id="game" width="640" height="400"></canvas>
+<p id="hud"></p>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = { x: 320, y: 300, hp: 100 };
+let demons = [
+  { x: 200, y: 100, hp: 30 },
+  { x: 400, y: 120, hp: 30 }
+];
+
+let keys = {};
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+function update() {
+  if (keys["a"]) player.x -= 3;
+  if (keys["d"]) player.x += 3;
+  if (keys["w"]) player.y -= 3;
+  if (keys["s"]) player.y += 3;
+
+  if (keys[" "]) {
+    demons.forEach(d => {
+      if (d.hp > 0 &&
+          Math.abs(player.x - d.x) < 40 &&
+          Math.abs(player.y - d.y) < 40) {
+        d.hp -= 1;
+      }
+    });
+  }
+
+  demons.forEach(d => {
+    if (d.hp > 0 && Math.random() < 0.01) {
+      player.hp -= 2;
+    }
+  });
+}
+
+function draw() {
+  ctx.clearRect(0,0,640,400);
+
+  // Player
+  ctx.fillStyle = "lime";
+  ctx.fillRect(player.x-10, player.y-10, 20, 20);
+
+  // Demons
+  ctx.fillStyle = "red";
+  demons.forEach(d => {
+    if (d.hp > 0) {
+      ctx.fillRect(d.x-15, d.y-15, 30, 30);
+    }
+  });
+
+  const alive = demons.filter(d => d.hp > 0).length;
+  document.getElementById("hud").innerText =
+    `HP: ${player.hp} | DEMONS LEFT: ${alive}`;
+
+  if (player.hp <= 0) {
+    alert("YOU DIED");
+    location.reload();
+  }
+
+  if (alive === 0) {
+    alert("ALL DEMONS SLAIN — YOU WIN");
+    location.reload();
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+
+</body>
+</html>
